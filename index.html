@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stardew Valley — Loved Gifts Guide</title>
+<meta name="description" content="Interactive Stardew Valley gift guide. Track loved gifts by season, animal products, and more. Check off maxed characters as you go.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎁</text></svg>">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Bitter:wght@700;900&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    background: #fefae0;
+    color: #3e2723;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+
+  /* Item name pill style */
+  .item-name {
+    font-family: 'Bitter', Georgia, serif;
+    font-weight: 900;
+    font-size: 15px;
+    color: #1b0e00;
+    background: linear-gradient(135deg, rgba(255,236,179,0.6), rgba(255,224,130,0.4));
+    padding: 1px 8px 2px;
+    border-radius: 5px;
+    border-bottom: 2px solid rgba(230,81,0,0.25);
+    letter-spacing: 0.3px;
+    display: inline-block;
+    line-height: 1.4;
+  }
+  .item-name-animal {
+    background: linear-gradient(135deg, rgba(215,204,200,0.6), rgba(188,170,164,0.35));
+    border-bottom-color: rgba(78,52,46,0.25);
+  }
+
+  /* Checkbox */
+  .char-check {
+    width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.12s ease;
+  }
+  .char-check.done { border: 2px solid #4caf50; background: #4caf50; }
+  .char-check.pending { border: 2px solid #bdbdbd; background: #fff; }
+
+  /* Animations */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn 0.2s ease-out; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.2/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const STORAGE_KEY = "stardew-done-chars-v4";
+
+function loadDone() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch { return new Set(); }
+}
+function saveDone(s) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...s])); } catch {}
+}
+
+const ANIMAL_PRODUCTS = [
+  { item: "Goat Cheese", who: ["Leah", "Robin"], source: "Goat → Goat Milk → Cheese Press", note: "Goats produce every other day" },
+  { item: "Duck Feather", who: ["Elliott", "Leo"], source: "Duck (high friendship + luck)", note: "Rare drop — keep several ducks" },
+  { item: "Void Egg", who: ["Sebastian", "Krobus"], source: "Void Chicken (daily)", note: "First egg from Krobus (5,000g) or Witch event" },
+  { item: "Wool", who: ["Emily"], source: "Rabbit or Sheep", note: "Rabbits also drop Rabbit's Foot" },
+  { item: "Truffle", who: ["Leah"], source: "Pig (forages outdoors)", note: "Spring–Fall only, needs Deluxe Barn" },
+  { item: "Rabbit's Foot", who: ["Almost everyone"], source: "Rabbit (high friendship)", note: "Universal love — except Penny hates it" },
+];
+
+const SEASONS = [
+  {
+    name: "Spring", emoji: "🌱",
+    bg: "linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%)",
+    accent: "#2e7d32", border: "#66bb6a",
+    gifts: [
+      { type: "crop", item: "Parsnip", who: ["Pam"], note: "Cheap, fast grow (4 days)" },
+      { type: "crop", item: "Cauliflower", who: ["Maru"], note: "12 days to grow, 80g seed" },
+      { type: "crop", item: "Strawberry", who: ["Demetrius", "Maru"], note: "Seeds from Egg Festival (Spring 13)" },
+      { type: "crop", item: "Tulip", who: ["Evelyn"], note: "Flower crop, 6 days, 20g seed" },
+      { type: "forage", item: "Leek", who: ["George"], note: "Common spring forage" },
+      { type: "forage", item: "Daffodil", who: ["Sandy"], note: "Common spring forage" },
+      { type: "forage", item: "Wild Horseradish", who: ["Krobus"], note: "Common spring forage" },
+    ],
+  },
+  {
+    name: "Summer", emoji: "☀️",
+    bg: "linear-gradient(135deg, #fff8e1 0%, #ffecb3 50%, #ffe082 100%)",
+    accent: "#e65100", border: "#ffb74d",
+    gifts: [
+      { type: "crop", item: "Melon", who: ["Penny"], note: "12 days, 80g seed" },
+      { type: "crop", item: "Hot Pepper", who: ["Shane", "Lewis"], note: "Regrows! 5 days + 3 day regrow" },
+      { type: "crop", item: "Poppy", who: ["Penny"], note: "Flower crop, 7 days, 100g seed" },
+      { type: "crop", item: "Summer Spangle", who: ["Caroline"], note: "Flower crop, 8 days, 50g" },
+      { type: "crop", item: "Sunflower", who: ["Haley"], note: "Also grows in Fall, 8 days" },
+      { type: "forage", item: "Grape", who: ["Vincent"], note: "Summer forage (also Fall crop)" },
+      { type: "forage", item: "Sweet Pea", who: ["Sandy"], note: "Summer forage" },
+    ],
+  },
+  {
+    name: "Fall", emoji: "🍂",
+    bg: "linear-gradient(135deg, #fff3e0 0%, #ffe0b2 50%, #ffcc80 100%)",
+    accent: "#bf360c", border: "#ff8a65",
+    gifts: [
+      { type: "crop", item: "Pumpkin", who: ["Abigail", "Krobus", "Willy"], note: "13 days, 100g — covers 3 villagers!" },
+      { type: "crop", item: "Yam", who: ["Linus"], note: "10 days, 60g seed" },
+      { type: "crop", item: "Fairy Rose", who: ["Evelyn", "Jas"], note: "Flower crop, 12 days, 200g seed" },
+      { type: "crop", item: "Sunflower", who: ["Haley"], note: "Also grows in Summer, 8 days" },
+      { type: "crop", item: "Grape", who: ["Vincent"], note: "Fall crop (also Summer forage)" },
+      { type: "forage", item: "Hazelnut", who: ["—"], note: "No one loves raw, but forage for Roasted Hazelnuts → Kent" },
+    ],
+  },
+  {
+    name: "Winter", emoji: "❄️",
+    bg: "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%)",
+    accent: "#1565c0", border: "#64b5f6",
+    gifts: [
+      { type: "forage", item: "Crocus", who: ["Sandy"], note: "Winter forage — Sandy's flower for every season!" },
+      { type: "note", item: "No loved crops", who: [], note: "Use stockpiled items, artisan goods, or mining gifts. Good time to work on non-crop villagers." },
+    ],
+  },
+  {
+    name: "Year-Round", emoji: "🌍",
+    bg: "linear-gradient(135deg, #f3e5f5 0%, #e1bee7 50%, #ce93d8 100%)",
+    accent: "#6a1b9a", border: "#ab47bc",
+    gifts: [
+      { type: "forage", item: "Cactus Fruit", who: ["Sam", "Linus"], note: "Desert forage, available once bus is repaired" },
+      { type: "note", item: "Universal Loves", who: [], note: "Prismatic Shard, Rabbit's Foot, Pearl, Golden Pumpkin, Magic Rock Candy — work for (almost) everyone" },
+    ],
+  },
+];
+
+const NO_EASY_GIFT = [
+  { name: "Alex", tip: "Complete Breakfast (cooking) or Salmon Dinner", method: "cooking", icon: "🍳" },
+  { name: "Clint", tip: "Amethyst — Crystalarium = infinite supply", method: "mining", icon: "⛏️" },
+  { name: "Dwarf", tip: "Amethyst / Omni Geode — same Crystalarium trick", method: "mining", icon: "⛏️" },
+  { name: "Gus", tip: "Escargot (recipe at 5♥ Willy) or Diamond", method: "cooking", icon: "🍳" },
+  { name: "Harvey", tip: "Coffee (5 beans → keg) or Pickles (preserves jar)", method: "artisan", icon: "🫙" },
+  { name: "Jodi", tip: "Pancakes (Egg + Wheat Flour — buy recipe 100g)", method: "cooking", icon: "🍳" },
+  { name: "Kent", tip: "Roasted Hazelnuts (3× fall forage → cook)", method: "cooking", icon: "🍳" },
+  { name: "Marnie", tip: "Farmer's Lunch (Parsnip + Omelet) or Diamond", method: "cooking", icon: "🍳" },
+  { name: "Pierre", tip: "Fried Calamari — Linus mails it free! Else universal loves", method: "special", icon: "🎁" },
+  { name: "Wizard", tip: "Purple Mushroom or Solar/Void Essence (mines)", method: "mining", icon: "⛏️" },
+];
+
+const ALL_CHARACTERS = (() => {
+  const names = new Set();
+  SEASONS.forEach(s => s.gifts.forEach(g => g.who.forEach(w => { if (w !== "—") names.add(w); })));
+  ANIMAL_PRODUCTS.forEach(a => a.who.forEach(w => { if (w !== "Almost everyone") names.add(w); }));
+  NO_EASY_GIFT.forEach(v => names.add(v.name));
+  return [...names].sort();
+})();
+
+const inCropForageSet = new Set();
+SEASONS.forEach(s => s.gifts.forEach(g => g.who.forEach(w => { if (w !== "—") inCropForageSet.add(w); })));
+const inAnimalSet = new Set();
+ANIMAL_PRODUCTS.forEach(a => a.who.forEach(w => { if (w !== "Almost everyone") inAnimalSet.add(w); }));
+const inHardSet = new Set();
+NO_EASY_GIFT.forEach(v => inHardSet.add(v.name));
+
+function getCharCategory(name) {
+  const tags = [];
+  if (inCropForageSet.has(name)) tags.push("🌾");
+  if (inAnimalSet.has(name)) tags.push("🐄");
+  if (inHardSet.has(name)) tags.push("🔧");
+  if (tags.length === 0) return { label: "universal", color: "#9e9e9e", tags: ["🎁"] };
+  return {
+    label: [
+      inCropForageSet.has(name) && "crop/forage",
+      inAnimalSet.has(name) && "animal",
+      inHardSet.has(name) && "other",
+    ].filter(Boolean).join(" + "),
+    color: inCropForageSet.has(name) ? "#558b2f" : inAnimalSet.has(name) ? "#00838f" : "#9e9e9e",
+    tags,
+  };
+}
+
+const NameTag = ({ name }) => (
+  <span style={{
+    display: "inline-block", background: "#fff9c4",
+    border: "1px solid #f9a825", borderRadius: 4,
+    padding: "0 5px", marginRight: 4, fontSize: 11,
+    fontWeight: 700, color: "#e65100", fontFamily: "'Fira Code', monospace",
+  }}>{name}</span>
+);
+
+const TypeBadge = ({ type }) => {
+  const colors = {
+    crop: "#7cb342", forage: "#e91e63", note: "#9e9e9e", animal: "#6d4c41",
+  };
+  const labels = {
+    crop: "CROP", forage: "FORAGE", note: "NOTE", animal: "ANIMAL",
+  };
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+      letterSpacing: 1, padding: "1px 6px", borderRadius: 4,
+      background: colors[type] || "#9e9e9e", color: "#fff", flexShrink: 0,
+      fontFamily: "'Fira Code', monospace",
+    }}>{labels[type] || type.toUpperCase()}</span>
+  );
+};
+
+const ItemName = ({ name, variant }) => (
+  <span className={`item-name${variant === "animal" ? " item-name-animal" : ""}`}>
+    {name}
+  </span>
+);
+
+function App() {
+  const [expandedSeason, setExpandedSeason] = useState(null);
+  const [showOthers, setShowOthers] = useState(false);
+  const [showAnimal, setShowAnimal] = useState(true);
+  const [filter, setFilter] = useState("all");
+  const [tab, setTab] = useState("gifts");
+  const [doneChars, setDoneChars] = useState(loadDone);
+
+  const updateDone = (next) => { setDoneChars(next); saveDone(next); };
+  const toggleChar = (name) => {
+    const next = new Set(doneChars);
+    if (next.has(name)) next.delete(name); else next.add(name);
+    updateDone(next);
+  };
+  const toggleSeason = (name) => setExpandedSeason(expandedSeason === name ? null : name);
+
+  const remainingCount = ALL_CHARACTERS.length - doneChars.size;
+
+  const filterGifts = (gifts) => gifts.map(g => {
+    if (g.type === "note") return g;
+    const remaining = g.who.filter(w => w === "—" || !doneChars.has(w));
+    return remaining.length === 0 ? null : { ...g, who: remaining };
+  }).filter(Boolean);
+
+  const filteredAnimal = ANIMAL_PRODUCTS.map(a => {
+    const remaining = a.who.filter(w => w === "Almost everyone" || !doneChars.has(w));
+    return remaining.length === 0 ? null : { ...a, who: remaining };
+  }).filter(Boolean);
+
+  const filteredNoEasy = NO_EASY_GIFT.filter(v => !doneChars.has(v.name));
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={{ textAlign: "center", marginBottom: 20 }}>
+        <div style={{ fontSize: 13, letterSpacing: 3, textTransform: "uppercase", color: "#8d6e63", marginBottom: 4 }}>
+          Stardew Valley
+        </div>
+        <h1 style={{
+          fontFamily: "'Bitter', Georgia, serif", fontSize: 28, fontWeight: 900,
+          margin: "0 0 6px 0", color: "#33691e", letterSpacing: -0.5,
+        }}>
+          🎁 Loved Gifts Guide
+        </h1>
+        <div style={{ fontSize: 12, color: "#8d6e63" }}>
+          Crops, forageables &amp; animal products — no fruit trees
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{
+        display: "flex", marginBottom: 20, borderRadius: 10,
+        overflow: "hidden", border: "2px solid #5d4037",
+      }}>
+        {[
+          { id: "gifts", label: "🗓️ Gifts" },
+          { id: "characters", label: "👤 Tracker" },
+        ].map((t, i) => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{
+            flex: 1, padding: "10px 12px", border: "none",
+            borderRight: i === 0 ? "2px solid #5d4037" : "none",
+            background: tab === t.id ? "#5d4037" : "#fefae0",
+            color: tab === t.id ? "#fefae0" : "#5d4037",
+            fontFamily: "inherit", fontSize: 14, fontWeight: 700,
+            cursor: "pointer", transition: "all 0.12s ease",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+          }}>
+            {t.label}
+            {t.id === "characters" && doneChars.size > 0 && (
+              <span style={{
+                fontSize: 10, background: tab === t.id ? "#81c784" : "#66bb6a",
+                color: "#fff", padding: "1px 6px", borderRadius: 8, fontWeight: 700,
+              }}>{doneChars.size}/{ALL_CHARACTERS.length}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* ============ CHARACTERS TAB ============ */}
+      {tab === "characters" && (
+        <div className="fade-in">
+          <div style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            marginBottom: 14, padding: "0 4px",
+          }}>
+            <div style={{ fontSize: 12, color: "#8d6e63" }}>
+              <strong>{remainingCount}</strong> of {ALL_CHARACTERS.length} still need gifts
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => updateDone(new Set())} style={{
+                padding: "4px 12px", borderRadius: 6, border: "1px solid #ef9a9a",
+                background: "#ffebee", color: "#c62828", fontFamily: "inherit",
+                fontSize: 11, fontWeight: 700, cursor: "pointer",
+              }}>Reset</button>
+              <button onClick={() => updateDone(new Set(ALL_CHARACTERS))} style={{
+                padding: "4px 12px", borderRadius: 6, border: "1px solid #a5d6a7",
+                background: "#e8f5e9", color: "#2e7d32", fontFamily: "inherit",
+                fontSize: 11, fontWeight: 700, cursor: "pointer",
+              }}>All Done</button>
+            </div>
+          </div>
+
+          <div style={{
+            padding: "10px 14px", background: "#fff9c4", borderRadius: 10,
+            border: "1px solid #f9a825", marginBottom: 16,
+            fontSize: 12, color: "#5d4037", lineHeight: 1.5,
+          }}>
+            ☐ = still working on &ensp;·&ensp; ☑ = maxed hearts (hides from Gifts tab)
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+            {ALL_CHARACTERS.map(name => {
+              const isDone = doneChars.has(name);
+              const cat = getCharCategory(name);
+              return (
+                <button key={name} onClick={() => toggleChar(name)} style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "10px 12px", borderRadius: 8,
+                  border: isDone ? "1.5px solid #a5d6a7" : "1.5px solid #e0e0e0",
+                  background: isDone ? "#e8f5e9" : "#fff",
+                  cursor: "pointer", fontFamily: "inherit",
+                  transition: "all 0.12s ease", position: "relative",
+                  textAlign: "left",
+                }}>
+                  <div className={`char-check ${isDone ? "done" : "pending"}`}>
+                    {isDone && (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6L5 9L10 3" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <div style={{
+                      fontSize: 13, fontWeight: 700,
+                      color: isDone ? "#9e9e9e" : "#3e2723",
+                      textDecoration: isDone ? "line-through" : "none",
+                    }}>{name}</div>
+                    <div style={{
+                      fontSize: 9, fontWeight: 600, letterSpacing: 0.5, marginTop: 1,
+                      color: isDone ? "#bdbdbd" : cat.color,
+                    }}>{cat.tags.join(" ")} {cat.label}</div>
+                  </div>
+                  {isDone && (
+                    <div style={{
+                      position: "absolute", top: 4, right: 6,
+                      fontSize: 9, color: "#4caf50", fontWeight: 700,
+                    }}>MAX ♥</div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ============ GIFTS TAB ============ */}
+      {tab === "gifts" && (
+        <div className="fade-in">
+          {/* Filter */}
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 20, flexWrap: "wrap" }}>
+            {["all", "crop", "forage"].map(f => (
+              <button key={f} onClick={() => setFilter(f)} style={{
+                padding: "6px 16px",
+                border: filter === f ? "2px solid #5d4037" : "2px solid #d7ccc8",
+                borderRadius: 20,
+                background: filter === f ? "#5d4037" : "transparent",
+                color: filter === f ? "#fefae0" : "#5d4037",
+                fontFamily: "inherit", fontSize: 12, fontWeight: 700,
+                cursor: "pointer", textTransform: "uppercase", letterSpacing: 1,
+              }}>
+                {f === "all" ? "All" : f === "crop" ? "🌾 Crops" : "🍃 Forage"}
+              </button>
+            ))}
+          </div>
+
+          {doneChars.size > 0 && (
+            <div style={{
+              textAlign: "center", fontSize: 11, color: "#2e7d32",
+              background: "#e8f5e9", padding: "6px 12px", borderRadius: 8,
+              marginBottom: 14, border: "1px solid #a5d6a7",
+            }}>
+              ✅ {doneChars.size} maxed
+              <span onClick={() => setTab("characters")} style={{
+                textDecoration: "underline", cursor: "pointer", fontWeight: 700, marginLeft: 6,
+              }}>manage</span>
+            </div>
+          )}
+
+          {/* ===== ANIMAL PRODUCTS ===== */}
+          {filteredAnimal.length > 0 && (
+            <Section
+              emoji="🐄" title="Animal Products" badge="year-round"
+              bg="linear-gradient(135deg, #efebe9 0%, #d7ccc8 50%, #bcaaa4 100%)"
+              borderColor="#8d6e63" accentColor="#4e342e" badgeBg="#6d4c41"
+              isOpen={showAnimal} toggle={() => setShowAnimal(!showAnimal)}
+            >
+              {filteredAnimal.map((a, i) => (
+                <div key={i} style={{
+                  padding: "10px 12px", marginBottom: 6, borderRadius: 8,
+                  background: "linear-gradient(135deg, #fafafa, #f5f0eb)",
+                  border: "1px solid #d7ccc8",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <TypeBadge type="animal" />
+                    <ItemName name={a.item} variant="animal" />
+                    <span style={{ fontSize: 12, color: "#6d4c41" }}>
+                      → {a.who.map((n, j) => <NameTag key={j} name={n} />)}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#5d4037", marginTop: 4, fontWeight: 600 }}>{a.source}</div>
+                  <div style={{ fontSize: 11, color: "#8d6e63", marginTop: 2 }}>{a.note}</div>
+                </div>
+              ))}
+            </Section>
+          )}
+
+          {/* Seasons */}
+          {SEASONS.map((season) => {
+            const isOpen = expandedSeason === season.name || expandedSeason === null;
+            const seasonGifts = filterGifts(season.gifts);
+            const filtered = seasonGifts.filter(g => filter === "all" || g.type === filter || g.type === "note");
+            const realCount = seasonGifts.filter(g => g.type !== "note").length;
+            if (realCount === 0 && seasonGifts.filter(g => g.type === "note").length === 0) return null;
+
+            return (
+              <Section
+                key={season.name}
+                emoji={season.emoji} title={season.name}
+                badge={`${realCount} gift${realCount !== 1 ? "s" : ""}`}
+                bg={season.bg} borderColor={season.border}
+                accentColor={season.accent} badgeBg={season.accent}
+                isOpen={isOpen} toggle={() => toggleSeason(season.name)}
+              >
+                {filtered.length === 0 ? (
+                  <div style={{ padding: 12, fontSize: 13, color: "#9e9e9e", textAlign: "center", fontStyle: "italic" }}>
+                    {filter === "all" ? "All characters here are maxed!" : `No ${filter} items this season`}
+                  </div>
+                ) : filtered.map((gift, i) => (
+                  <div key={i} style={{
+                    padding: "10px 12px", marginBottom: 6, borderRadius: 8,
+                    background: gift.type === "note"
+                      ? "repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0,0,0,0.015) 8px, rgba(0,0,0,0.015) 16px)"
+                      : gift.type === "crop" ? "#f1f8e9" : "#fce4ec20",
+                    border: gift.type === "note"
+                      ? "1px dashed #bdbdbd"
+                      : `1px solid ${gift.type === "crop" ? "#c5e1a5" : "#f8bbd0"}`,
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <TypeBadge type={gift.type} />
+                      <ItemName name={gift.item} />
+                      {gift.who.length > 0 && gift.who[0] !== "—" && (
+                        <span style={{ fontSize: 12, color: "#6d4c41" }}>
+                          → {gift.who.map((n, j) => <NameTag key={j} name={n} />)}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{
+                      fontSize: 11, color: "#795548", marginTop: 4, lineHeight: 1.4,
+                      fontStyle: gift.type === "note" ? "italic" : "normal",
+                    }}>{gift.note}</div>
+                  </div>
+                ))}
+              </Section>
+            );
+          })}
+
+          {/* MVP */}
+          <div style={{
+            margin: "24px 0 16px", padding: "16px 18px", borderRadius: 12,
+            background: "linear-gradient(135deg, #fff9c4, #fff176)",
+            border: "2px solid #f9a825",
+          }}>
+            <div style={{
+              fontFamily: "'Bitter', Georgia, serif",
+              fontSize: 15, fontWeight: 900, marginBottom: 8, color: "#e65100",
+            }}>⭐ MVP Items for Friendship</div>
+            <div style={{ fontSize: 12, lineHeight: 1.8, color: "#5d4037" }}>
+              <strong>Pumpkin</strong> — 3 villagers (Abigail, Krobus, Willy)<br/>
+              <strong>Goat Cheese</strong> — Leah + Robin, year-round<br/>
+              <strong>Hot Pepper</strong> — regrows, Shane + Lewis<br/>
+              <strong>Duck Feather</strong> — Elliott + Leo, year-round<br/>
+              <strong>Fairy Rose</strong> — Evelyn + Jas<br/>
+              <strong>Amethyst</strong> — Clint, Dwarf, Emily (Crystalarium = ∞)<br/>
+              <strong>Rabbit's Foot</strong> — universal love except Penny
+            </div>
+          </div>
+
+          {/* Hard characters */}
+          {filteredNoEasy.length > 0 && (
+            <Section
+              emoji="🔧" title="Cooking / Mining / Artisan"
+              badge={String(filteredNoEasy.length)}
+              bg="linear-gradient(135deg, #efebe9, #d7ccc8)"
+              borderColor="#bdbdbd" accentColor="#5d4037" badgeBg="#795548"
+              isOpen={showOthers} toggle={() => setShowOthers(!showOthers)}
+            >
+              {filteredNoEasy.map((v, i) => (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "8px 10px", marginBottom: 4, borderRadius: 8,
+                  background: "#fafafa", border: "1px solid #eee",
+                }}>
+                  <span style={{ fontSize: 16, flexShrink: 0 }}>{v.icon}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{
+                        fontFamily: "'Bitter', Georgia, serif",
+                        fontSize: 13, fontWeight: 700, color: "#5d4037",
+                      }}>{v.name}</span>
+                      <span style={{
+                        fontSize: 9, fontWeight: 700, textTransform: "uppercase",
+                        letterSpacing: 0.5, padding: "1px 5px", borderRadius: 3,
+                        background: v.method === "mining" ? "#7986cb" :
+                                   v.method === "cooking" ? "#ffb74d" :
+                                   v.method === "artisan" ? "#81c784" : "#ce93d8",
+                        color: "#fff",
+                      }}>{v.method}</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: "#8d6e63", marginTop: 2, lineHeight: 1.3 }}>{v.tip}</div>
+                  </div>
+                </div>
+              ))}
+            </Section>
+          )}
+        </div>
+      )}
+
+      <div style={{ textAlign: "center", fontSize: 10, color: "#bcaaa4", marginTop: 24, paddingBottom: 20 }}>
+        Based on Stardew Valley v1.6 data · Excludes fruit tree items
+      </div>
+    </div>
+  );
+}
+
+function Section({ emoji, title, badge, bg, borderColor, accentColor, badgeBg, isOpen, toggle, children }) {
+  return (
+    <div style={{
+      marginBottom: 16, borderRadius: 12, overflow: "hidden",
+      border: `2px solid ${borderColor}`, background: "#fffef7",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+    }}>
+      <button onClick={toggle} style={{
+        width: "100%", padding: "14px 18px", border: "none",
+        background: bg, display: "flex", alignItems: "center",
+        justifyContent: "space-between", cursor: "pointer",
+        fontFamily: "'Fira Code', monospace",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 22 }}>{emoji}</span>
+          <span style={{
+            fontFamily: "'Bitter', Georgia, serif",
+            fontSize: 18, fontWeight: 900, color: accentColor, letterSpacing: 0.5,
+          }}>{title}</span>
+          <span style={{
+            fontSize: 11, background: badgeBg, color: "#fff",
+            padding: "2px 8px", borderRadius: 10, fontWeight: 700,
+            fontFamily: "'Fira Code', monospace",
+          }}>{badge}</span>
+        </div>
+        <span style={{
+          fontSize: 18, color: accentColor,
+          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+          transition: "transform 0.2s ease", display: "inline-block",
+        }}>▼</span>
+      </button>
+      {isOpen && <div className="fade-in" style={{ padding: "12px 14px" }}>{children}</div>}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+</body>
+</html>
