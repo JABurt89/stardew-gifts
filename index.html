@@ -17,8 +17,6 @@
   .name-tag{display:inline-block;background:#fff9c4;border:1px solid #f9a825;border-radius:4px;padding:0 5px;margin-right:4px;font-size:11px;font-weight:700;color:#e65100;font-family:'Fira Code',monospace}
   .type-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:1px 6px;border-radius:4px;color:#fff;flex-shrink:0;font-family:'Fira Code',monospace}
   .char-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-family:inherit;transition:all .12s ease;position:relative;text-align:left;width:100%}
-  .chk{width:20px;height:20px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .12s ease}
-  .chk.on{border:2px solid #4caf50;background:#4caf50}.chk.off{border:2px solid #bdbdbd;background:#fff}
   .section-hdr{width:100%;padding:14px 18px;border:none;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:'Fira Code',monospace}
   .section-hdr .title{font-family:'Bitter',Georgia,serif;font-weight:900;letter-spacing:.5px}
   .section-hdr .badge{font-size:11px;color:#fff;padding:2px 8px;border-radius:10px;font-weight:700;font-family:'Fira Code',monospace}
@@ -27,15 +25,13 @@
   .char-card{border-radius:12px;overflow:hidden;border:2px solid #d7ccc8;background:#fffef7;margin-bottom:12px}
   .char-card-hdr{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;background:linear-gradient(135deg,#f5f5f5,#eeeeee)}
   .char-card-hdr img{width:48px;height:48px;image-rendering:pixelated;border-radius:8px;border:2px solid #d7ccc8;background:#fff}
-  .char-card-hdr .info{flex:1}
-  .char-card-hdr .info h3{font-family:'Bitter',Georgia,serif;font-size:16px;font-weight:900;color:#3e2723;margin:0}
-  .char-card-hdr .info .sub{font-size:10px;color:#8d6e63;margin-top:2px}
   .gift-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #f5f5f5}
   .gift-row:last-child{border-bottom:none}
   .gift-row img{width:24px;height:24px;image-rendering:pixelated;flex-shrink:0}
   .gift-row .g-name{font-family:'Bitter',Georgia,serif;font-weight:700;font-size:13px;color:#3e2723}
   .gift-row .g-src{font-size:10px;color:#8d6e63;margin-top:1px}
   .love-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;color:#fff;flex-shrink:0;text-transform:uppercase;letter-spacing:.5px}
+  .wiki-img{image-rendering:pixelated}
 </style>
 </head>
 <body>
@@ -45,67 +41,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.2/babel.min.js"></script>
 <script type="text/babel">
 const{useState,useEffect,useMemo}=React;
-const W="https://stardewvalleywiki.com/mediawiki/images";
-const I={
-"Pumpkin":`${W}/6/64/Pumpkin.png`,"Parsnip":`${W}/d/db/Parsnip.png`,"Cauliflower":`${W}/a/aa/Cauliflower.png`,
-"Strawberry":`${W}/6/6d/Strawberry.png`,"Tulip":`${W}/c/cf/Tulip.png`,"Leek":`${W}/5/57/Leek.png`,
-"Daffodil":`${W}/4/4b/Daffodil.png`,"Wild Horseradish":`${W}/9/90/Wild_Horseradish.png`,
-"Melon":`${W}/1/19/Melon.png`,"Hot Pepper":`${W}/f/f1/Hot_Pepper.png`,"Poppy":`${W}/3/37/Poppy.png`,
-"Summer Spangle":`${W}/9/9f/Summer_Spangle.png`,"Sunflower":`${W}/8/81/Sunflower.png`,
-"Grape":`${W}/c/c2/Grape.png`,"Sweet Pea":`${W}/d/d9/Sweet_Pea.png`,"Yam":`${W}/5/52/Yam.png`,
-"Fairy Rose":`${W}/5/5c/Fairy_Rose.png`,"Hazelnut":`${W}/3/31/Hazelnut.png`,
-"Crocus":`${W}/2/2f/Crocus.png`,"Cactus Fruit":`${W}/3/32/Cactus_Fruit.png`,
-"Goat Cheese":`${W}/c/c8/Goat_Cheese.png`,"Duck Feather":`${W}/f/f9/Duck_Feather.png`,
-"Void Egg":`${W}/5/58/Void_Egg.png`,"Wool":`${W}/3/34/Wool.png`,"Truffle":`${W}/f/f2/Truffle.png`,
-"Rabbit's Foot":`${W}/c/ca/Rabbit%27s_Foot.png`,"Amethyst":`${W}/2/2e/Amethyst.png`,
-"Coffee":`${W}/e/e9/Coffee.png`,"Pickles":`${W}/c/c7/Pickles.png`,"Pancakes":`${W}/6/6b/Pancakes.png`,
-"Roasted Hazelnuts":`${W}/1/18/Roasted_Hazelnuts.png`,
-"Farmer's Lunch":`${W}/7/79/Farmer%27s_Lunch.png`,"Fried Calamari":`${W}/2/25/Fried_Calamari.png`,
-"Purple Mushroom":`${W}/4/4b/Purple_Mushroom.png`,"Solar Essence":`${W}/f/f4/Solar_Essence.png`,
-"Complete Breakfast":`${W}/3/3d/Complete_Breakfast.png`,"Escargot":`${W}/7/78/Escargot.png`,
-"Diamond":`${W}/e/ea/Diamond.png`,"Sashimi":`${W}/4/41/Sashimi.png`,
-"Void Essence":`${W}/1/12/Void_Essence.png`,"Salmon Dinner":`${W}/4/43/Salmon_Dinner.png`,
-"Emerald":`${W}/3/3b/Emerald.png`,"Tom Kha Soup":`${W}/4/4e/Tom_Kha_Soup.png`,
-"Frozen Tear":`${W}/e/ec/Frozen_Tear.png`,"Salad":`${W}/1/13/Salad.png`,
-"Wine":`${W}/4/4a/Wine.png`,"Vegetable Medley":`${W}/6/60/Vegetable_Medley.png`,
-"Chocolate Cake":`${W}/e/e0/Chocolate_Cake.png`,"Spicy Eel":`${W}/c/c3/Spicy_Eel.png`,
-"Pufferfish":`${W}/d/d5/Pufferfish.png`,"Pink Cake":`${W}/0/04/Pink_Cake.png`,
-"Fruit Salad":`${W}/b/ba/Fruit_Salad.png`,"Coconut":`${W}/2/2f/Coconut.png`,
-"Mead":`${W}/1/18/Mead.png`,"Beer":`${W}/b/b3/Beer.png`,
-"Green Tea":`${W}/a/a9/Green_Tea.png`,"Cloth":`${W}/4/43/Cloth.png`,
-"Gold Bar":`${W}/7/7b/Gold_Bar.png`,"Iridium Bar":`${W}/6/64/Iridium_Bar.png`,
-"Poppyseed Muffin":`${W}/e/e5/Poppyseed_Muffin.png`,"Stir Fry":`${W}/5/59/Stir_Fry.png`,
-"Battery Pack":`${W}/c/c4/Battery_Pack.png`,"Pepper Poppers":`${W}/0/03/Pepper_Poppers.png`,
-"Cheese Cauliflower":`${W}/b/b1/Cheese_Cauliflower.png`,
-"Lobster":`${W}/4/44/Lobster.png`,"Crab Cakes":`${W}/1/13/Crab_Cakes.png`,
-"Squid Ink":`${W}/8/83/Squid_Ink.png`,"Truffle Oil":`${W}/3/3a/Truffle_Oil.png`,
-"Rhubarb Pie":`${W}/0/0e/Rhubarb_Pie.png`,"Sandfish":`${W}/1/18/Sandfish.png`,
-"Red Plate":`${W}/c/c0/Red_Plate.png`,"Roots Platter":`${W}/2/2b/Roots_Platter.png`,
-"Maple Bar":`${W}/1/1d/Maple_Bar.png`,"Plum Pudding":`${W}/7/70/Plum_Pudding.png`,
-"Survival Burger":`${W}/9/99/Survival_Burger.png`,"Autumn's Bounty":`${W}/4/41/Autumn%27s_Bounty.png`,
-"Glazed Yams":`${W}/f/fe/Glazed_Yams.png`,"Pumpkin Pie":`${W}/c/c9/Pumpkin_Pie.png`,
-"Cranberry Candy":`${W}/7/7e/Cranberry_Candy.png`,"Pumpkin Soup":`${W}/f/f0/Pumpkin_Soup.png`,
-"Omni Geode":`${W}/0/09/Omni_Geode.png`,"Catfish":`${W}/9/99/Catfish.png`,
-"Octopus":`${W}/f/f2/Octopus.png`,"Sea Cucumber":`${W}/2/2e/Sea_Cucumber.png`,
-"Sturgeon":`${W}/4/42/Sturgeon.png`,"Super Meal":`${W}/e/e0/Super_Meal.png`,
-"Rice Pudding":`${W}/d/d6/Rice_Pudding.png`,
-"Goat Milk":`${W}/e/e3/Goat_Milk.png`,"Poi":`${W}/a/a0/Poi.png`,
-};
-const P={
-"Abigail":`${W}/8/88/Abigail.png`,"Alex":`${W}/0/04/Alex.png`,"Caroline":`${W}/8/87/Caroline.png`,
-"Clint":`${W}/3/31/Clint.png`,"Demetrius":`${W}/f/f9/Demetrius.png`,"Dwarf":`${W}/e/ed/Dwarf.png`,
-"Elliott":`${W}/b/bd/Elliott.png`,"Emily":`${W}/2/28/Emily.png`,"Evelyn":`${W}/8/8e/Evelyn.png`,
-"George":`${W}/7/78/George.png`,"Gus":`${W}/5/52/Gus.png`,"Haley":`${W}/1/1b/Haley.png`,
-"Harvey":`${W}/9/95/Harvey.png`,"Jas":`${W}/5/55/Jas.png`,"Jodi":`${W}/4/41/Jodi.png`,
-"Kent":`${W}/9/99/Kent.png`,"Krobus":`${W}/7/71/Krobus.png`,"Leah":`${W}/e/e6/Leah.png`,
-"Leo":`${W}/1/1d/Leo.png`,"Lewis":`${W}/2/2b/Lewis.png`,"Linus":`${W}/3/31/Linus.png`,
-"Marnie":`${W}/5/52/Marnie.png`,"Maru":`${W}/f/f8/Maru.png`,"Pam":`${W}/d/da/Pam.png`,
-"Penny":`${W}/a/ab/Penny.png`,"Pierre":`${W}/7/7e/Pierre.png`,"Robin":`${W}/1/1b/Robin.png`,
-"Sam":`${W}/9/94/Sam.png`,"Sandy":`${W}/4/4e/Sandy.png`,"Sebastian":`${W}/a/a8/Sebastian.png`,
-"Shane":`${W}/8/8b/Shane.png`,"Vincent":`${W}/f/f1/Vincent.png`,"Willy":`${W}/8/82/Willy.png`,
-"Wizard":`${W}/c/c7/Wizard.png`,
-};
-// Complete character data: loved items, liked items, sources
+
+// Reliable wiki image URL via Special:FilePath redirect (always resolves correctly)
+function wikiImg(filename) {
+  return `https://stardewvalleywiki.com/mediawiki/index.php?title=Special:FilePath&file=${encodeURIComponent(filename)}`;
+}
+function itemUrl(name) {
+  return wikiImg(name.replace(/ /g, '_') + '.png');
+}
+function charUrl(name) {
+  return wikiImg(name + '.png');
+}
+
 const CHARS={
 "Abigail":{bday:"Fall 13",loved:[
   {n:"Amethyst",src:"Mining / Crystalarium"},{n:"Chocolate Cake",src:"Cooking (Wheat Flour, Sugar, Egg)"},
@@ -270,7 +217,7 @@ const CHARS={
 "Willy":{bday:"Summer 24",loved:[
   {n:"Pumpkin",src:"Fall crop (13 days)"},{n:"Catfish",src:"Fishing (Spring/Fall/Summer, rain)"},
   {n:"Diamond",src:"Mining / Crystalarium"},{n:"Mead",src:"Keg (Honey)"},
-  {n:"Octopus",src:"Fishing (Summer, ocean, morning)"},{n:"Sea Cucumber",src:"Fishing (Fall/Winter, ocean)"},
+  {n:"Octopus",src:"Fishing (Summer, ocean)"},{n:"Sea Cucumber",src:"Fishing (Fall/Winter, ocean)"},
   {n:"Sturgeon",src:"Fishing (Summer/Winter, mountain lake)"}],liked:[
   {n:"Any Fruit",src:"Various crops/forage"},{n:"Gold Bar",src:"Mining + Furnace"},
   {n:"Quartz",src:"Mining (common)"}]},
@@ -280,7 +227,6 @@ const CHARS={
   {n:"Super Meal",src:"Cooking (Bok Choy, Cranberries, Artichoke)"}],liked:[
   {n:"Any Fruit",src:"Various crops/forage"},{n:"Quartz",src:"Mining (common)"}]},
 };
-
 const ANIMAL_PRODUCTS=[
   {item:"Goat Cheese",who:["Leah","Robin"],source:"Goat → Goat Milk → Cheese Press",note:"Goats produce every other day"},
   {item:"Duck Feather",who:["Elliott","Leo"],source:"Duck (high friendship + luck)",note:"Rare drop — keep several ducks"},
@@ -322,24 +268,31 @@ const SEASONS=[
   ]},
 ];
 const NO_EASY_GIFT=[
-  {name:"Alex",tip:"Complete Breakfast (cooking) or Salmon Dinner",method:"cooking",icon:"🍳",giftIcon:"Complete Breakfast"},
-  {name:"Clint",tip:"Amethyst — Crystalarium = infinite supply",method:"mining",icon:"⛏️",giftIcon:"Amethyst"},
-  {name:"Dwarf",tip:"Amethyst / Omni Geode — same Crystalarium trick",method:"mining",icon:"⛏️",giftIcon:"Amethyst"},
-  {name:"Gus",tip:"Escargot (recipe at 5♥ Willy) or Diamond",method:"cooking",icon:"🍳",giftIcon:"Escargot"},
-  {name:"Harvey",tip:"Coffee (5 beans → keg) or Pickles (preserves jar)",method:"artisan",icon:"🫙",giftIcon:"Coffee"},
-  {name:"Jodi",tip:"Pancakes (Egg + Wheat Flour — recipe 100g)",method:"cooking",icon:"🍳",giftIcon:"Pancakes"},
-  {name:"Kent",tip:"Roasted Hazelnuts (3× fall forage → cook)",method:"cooking",icon:"🍳",giftIcon:"Roasted Hazelnuts"},
-  {name:"Marnie",tip:"Farmer's Lunch (Parsnip + Omelet) or Diamond",method:"cooking",icon:"🍳",giftIcon:"Farmer's Lunch"},
-  {name:"Pierre",tip:"Fried Calamari — Linus mails it free!",method:"special",icon:"🎁",giftIcon:"Fried Calamari"},
-  {name:"Wizard",tip:"Purple Mushroom or Solar/Void Essence (mines)",method:"mining",icon:"⛏️",giftIcon:"Purple Mushroom"},
+  {name:"Alex",tip:"Complete Breakfast (cooking) or Salmon Dinner",method:"cooking",icon:"🍳",giftName:"Complete Breakfast"},
+  {name:"Clint",tip:"Amethyst — Crystalarium = infinite supply",method:"mining",icon:"⛏️",giftName:"Amethyst"},
+  {name:"Dwarf",tip:"Amethyst / Omni Geode — same Crystalarium trick",method:"mining",icon:"⛏️",giftName:"Amethyst"},
+  {name:"Gus",tip:"Escargot (recipe at 5♥ Willy) or Diamond",method:"cooking",icon:"🍳",giftName:"Escargot"},
+  {name:"Harvey",tip:"Coffee (5 beans → keg) or Pickles (preserves jar)",method:"artisan",icon:"🫙",giftName:"Coffee"},
+  {name:"Jodi",tip:"Pancakes (Egg + Wheat Flour — recipe 100g)",method:"cooking",icon:"🍳",giftName:"Pancakes"},
+  {name:"Kent",tip:"Roasted Hazelnuts (3× fall forage → cook)",method:"cooking",icon:"🍳",giftName:"Roasted Hazelnuts"},
+  {name:"Marnie",tip:"Farmer's Lunch (Parsnip + Omelet) or Diamond",method:"cooking",icon:"🍳",giftName:"Farmer's Lunch"},
+  {name:"Pierre",tip:"Fried Calamari — Linus mails it free!",method:"special",icon:"🎁",giftName:"Fried Calamari"},
+  {name:"Wizard",tip:"Purple Mushroom or Solar/Void Essence (mines)",method:"mining",icon:"⛏️",giftName:"Purple Mushroom"},
 ];
 const ALL_CHARACTERS=Object.keys(CHARS).sort();
 const SK="stardew-done-v5";
 function ld(){try{const r=localStorage.getItem(SK);return r?new Set(JSON.parse(r)):new Set()}catch{return new Set()}}
 function sv(s){try{localStorage.setItem(SK,JSON.stringify([...s]))}catch{}}
 
-const Ico=({name,size=24})=>{const u=I[name];return u?<img src={u} alt={name} style={{width:size,height:size,imageRendering:"pixelated"}} loading="lazy"/>:null};
-const Port=({name,size=48})=>{const u=P[name];return u?<img src={u} alt={name} style={{width:size,height:size,imageRendering:"pixelated",borderRadius:8,border:"2px solid #d7ccc8",background:"#fff"}} loading="lazy"/>:null};
+// Generic items starting with "Any" won't have wiki icons
+const Ico=({name,size=24})=>{
+  if(!name||name.startsWith("Any"))return null;
+  return <img className="wiki-img" src={itemUrl(name)} alt={name} style={{width:size,height:size}} loading="lazy"
+    onError={e=>{e.target.style.display='none'}}/>;
+};
+const Port=({name,size=48})=><img className="wiki-img" src={charUrl(name)} alt={name}
+  style={{width:size,height:size,borderRadius:8,border:"2px solid #d7ccc8",background:"#fff"}} loading="lazy"
+  onError={e=>{e.target.style.display='none'}}/>;
 const NT=({name})=><span className="name-tag">{name}</span>;
 const ItemPill=({name,variant})=><span className={`item-pill${variant==="animal"?" animal":""}`}><Ico name={name}/>{name}</span>;
 
@@ -384,14 +337,11 @@ function App(){
       <div style={{fontSize:12,color:"#8d6e63"}}>Crops, forageables &amp; animal products — no fruit trees</div>
     </div>
 
-    {/* Tabs */}
     <div style={{display:"flex",marginBottom:20,borderRadius:10,overflow:"hidden",border:"2px solid #5d4037"}}>
       {[{id:"gifts",l:"🗓️ Season"},{id:"characters",l:"👤 By Char"},{id:"tracker",l:"✅ Tracker"}].map((t,i,a)=>
         <button key={t.id} onClick={()=>setTab(t.id)} style={{
-          flex:1,padding:"10px 8px",border:"none",
-          borderRight:i<a.length-1?"2px solid #5d4037":"none",
-          background:tab===t.id?"#5d4037":"#fefae0",
-          color:tab===t.id?"#fefae0":"#5d4037",
+          flex:1,padding:"10px 8px",border:"none",borderRight:i<a.length-1?"2px solid #5d4037":"none",
+          background:tab===t.id?"#5d4037":"#fefae0",color:tab===t.id?"#fefae0":"#5d4037",
           fontFamily:"inherit",fontSize:13,fontWeight:700,cursor:"pointer",
           display:"flex",alignItems:"center",justifyContent:"center",gap:4,
         }}>{t.l}
@@ -400,24 +350,23 @@ function App(){
       )}
     </div>
 
-    {/* ===== TRACKER TAB ===== */}
+    {/* TRACKER */}
     {tab==="tracker"&&<div className="fade-in">
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,padding:"0 4px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{fontSize:12,color:"#8d6e63"}}><strong>{rem}</strong> of {ALL_CHARACTERS.length} remaining</div>
         <div style={{display:"flex",gap:8}}>
           <button onClick={()=>ud(new Set())} style={{padding:"4px 12px",borderRadius:6,border:"1px solid #ef9a9a",background:"#ffebee",color:"#c62828",fontFamily:"inherit",fontSize:11,fontWeight:700,cursor:"pointer"}}>Reset</button>
           <button onClick={()=>ud(new Set(ALL_CHARACTERS))} style={{padding:"4px 12px",borderRadius:6,border:"1px solid #a5d6a7",background:"#e8f5e9",color:"#2e7d32",fontFamily:"inherit",fontSize:11,fontWeight:700,cursor:"pointer"}}>All Done</button>
         </div>
       </div>
-      <div style={{padding:"10px 14px",background:"#fff9c4",borderRadius:10,border:"1px solid #f9a825",marginBottom:16,fontSize:12,color:"#5d4037",lineHeight:1.5}}>
+      <div style={{padding:"10px 14px",background:"#fff9c4",borderRadius:10,border:"1px solid #f9a825",marginBottom:16,fontSize:12,color:"#5d4037"}}>
         ☐ = still working on &ensp;·&ensp; ☑ = maxed hearts (hides from other tabs)
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-        {ALL_CHARACTERS.map(name=>{
-          const d=done.has(name);
+        {ALL_CHARACTERS.map(name=>{const d=done.has(name);
           return <button key={name} className="char-btn" onClick={()=>tc(name)} style={{border:d?"1.5px solid #a5d6a7":"1.5px solid #e0e0e0",background:d?"#e8f5e9":"#fff"}}>
             <Port name={name} size={32}/>
-            <div className="chk" style={d?{border:"2px solid #4caf50",background:"#4caf50"}:{border:"2px solid #bdbdbd",background:"#fff"}}>
+            <div style={{width:20,height:20,borderRadius:5,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",border:d?"2px solid #4caf50":"2px solid #bdbdbd",background:d?"#4caf50":"#fff",transition:"all .12s"}}>
               {d&&<svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6L5 9L10 3" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>}
             </div>
             <div style={{flex:1}}>
@@ -425,32 +374,28 @@ function App(){
               <div style={{fontSize:10,color:"#8d6e63"}}>{CHARS[name]?.bday}</div>
             </div>
             {d&&<div style={{position:"absolute",top:4,right:6,fontSize:9,color:"#4caf50",fontWeight:700}}>MAX ♥</div>}
-          </button>;
-        })}
+          </button>;})}
       </div>
     </div>}
 
-    {/* ===== BY CHARACTER TAB ===== */}
+    {/* BY CHARACTER */}
     {tab==="characters"&&<div className="fade-in">
       <input value={charSearch} onChange={e=>setCharSearch(e.target.value)} placeholder="Search characters..." style={{
         width:"100%",padding:"10px 14px",borderRadius:10,border:"2px solid #d7ccc8",background:"#fff",
-        fontFamily:"inherit",fontSize:13,marginBottom:16,outline:"none",
-      }}/>
+        fontFamily:"inherit",fontSize:13,marginBottom:16,outline:"none"}}/>
       {done.size>0&&<div style={{textAlign:"center",fontSize:11,color:"#2e7d32",background:"#e8f5e9",padding:"6px 12px",borderRadius:8,marginBottom:14,border:"1px solid #a5d6a7"}}>
         ✅ {done.size} maxed — showing remaining only
       </div>}
       {filteredChars.length===0&&<div style={{textAlign:"center",padding:40,color:"#9e9e9e",fontStyle:"italic"}}>
         {charSearch?"No matches":"All characters maxed! 🎉"}
       </div>}
-      {filteredChars.map(name=>{
-        const c=CHARS[name];if(!c)return null;
-        const isOpen=openChar===name;
+      {filteredChars.map(name=>{const c=CHARS[name];if(!c)return null;const isOpen=openChar===name;
         return <div key={name} className="char-card">
           <div className="char-card-hdr" onClick={()=>setOpenChar(isOpen?null:name)}>
             <Port name={name}/>
-            <div className="info">
-              <h3>{name}</h3>
-              <div className="sub">🎂 {c.bday} · {c.loved.length} loved · {c.liked.length} liked</div>
+            <div style={{flex:1}}>
+              <h3 style={{fontFamily:"'Bitter',Georgia,serif",fontSize:16,fontWeight:900,color:"#3e2723",margin:0}}>{name}</h3>
+              <div style={{fontSize:10,color:"#8d6e63",marginTop:2}}>🎂 {c.bday} · {c.loved.length} loved · {c.liked.length} liked</div>
             </div>
             <span style={{fontSize:18,color:"#8d6e63",transform:isOpen?"rotate(180deg)":"rotate(0)",transition:"transform .2s",display:"inline-block"}}>▼</span>
           </div>
@@ -458,27 +403,20 @@ function App(){
             <div style={{fontSize:11,fontWeight:700,color:"#c62828",textTransform:"uppercase",letterSpacing:1,padding:"6px 0 4px",borderBottom:"1px solid #ffcdd2"}}>❤️ Loved</div>
             {c.loved.map((g,i)=><div key={i} className="gift-row">
               <Ico name={g.n}/>
-              <div style={{flex:1}}>
-                <div className="g-name">{g.n}</div>
-                <div className="g-src">{g.src}</div>
-              </div>
+              <div style={{flex:1}}><div className="g-name">{g.n}</div><div className="g-src">{g.src}</div></div>
               <span className="love-badge" style={{background:"#e53935"}}>love</span>
             </div>)}
             <div style={{fontSize:11,fontWeight:700,color:"#1565c0",textTransform:"uppercase",letterSpacing:1,padding:"10px 0 4px",borderBottom:"1px solid #bbdefb"}}>💙 Liked (easy)</div>
             {c.liked.map((g,i)=><div key={i} className="gift-row">
               <Ico name={g.n}/>
-              <div style={{flex:1}}>
-                <div className="g-name">{g.n}</div>
-                <div className="g-src">{g.src}</div>
-              </div>
+              <div style={{flex:1}}><div className="g-name">{g.n}</div><div className="g-src">{g.src}</div></div>
               <span className="love-badge" style={{background:"#1e88e5"}}>like</span>
             </div>)}
           </div>}
-        </div>;
-      })}
+        </div>;})}
     </div>}
 
-    {/* ===== SEASON GIFTS TAB ===== */}
+    {/* SEASON GIFTS */}
     {tab==="gifts"&&<div className="fade-in">
       <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:20,flexWrap:"wrap"}}>
         {["all","crop","forage"].map(f=><button key={f} onClick={()=>setFilter(f)} style={{
@@ -490,8 +428,6 @@ function App(){
       {done.size>0&&<div style={{textAlign:"center",fontSize:11,color:"#2e7d32",background:"#e8f5e9",padding:"6px 12px",borderRadius:8,marginBottom:14,border:"1px solid #a5d6a7"}}>
         ✅ {done.size} maxed <span onClick={()=>setTab("tracker")} style={{textDecoration:"underline",cursor:"pointer",fontWeight:700,marginLeft:6}}>manage</span>
       </div>}
-
-      {/* Animal products */}
       {fa.length>0&&<Section emoji="🐄" title="Animal Products" badge="year-round"
         bg="linear-gradient(135deg,#efebe9 0%,#d7ccc8 50%,#bcaaa4 100%)" borderColor="#8d6e63" accentColor="#4e342e" badgeBg="#6d4c41"
         isOpen={showAnimal} toggle={()=>setShowAnimal(!showAnimal)}>
@@ -505,17 +441,14 @@ function App(){
           <div style={{fontSize:11,color:"#8d6e63",marginTop:2}}>{a.note}</div>
         </div>)}
       </Section>}
-
-      {/* Seasons */}
-      {SEASONS.map(s=>{
-        const isO=expSeason===s.name||expSeason===null;
-        const sg=fg(s.gifts);const fl=sg.filter(g=>filter==="all"||g.type===filter||g.type==="note");
+      {SEASONS.map(s=>{const isO=expSeason===s.name||expSeason===null;const sg=fg(s.gifts);
+        const fl=sg.filter(g=>filter==="all"||g.type===filter||g.type==="note");
         const rc=sg.filter(g=>g.type!=="note").length;
         if(rc===0&&sg.filter(g=>g.type==="note").length===0)return null;
         return <Section key={s.name} emoji={s.emoji} title={s.name} badge={`${rc} gift${rc!==1?"s":""}`}
           bg={s.bg} borderColor={s.border} accentColor={s.accent} badgeBg={s.accent}
           isOpen={isO} toggle={()=>setExpSeason(expSeason===s.name?null:s.name)}>
-          {fl.length===0?<div style={{padding:12,fontSize:13,color:"#9e9e9e",textAlign:"center",fontStyle:"italic"}}>{filter==="all"?"All maxed here!":"No "+filter+" items"}</div>
+          {fl.length===0?<div style={{padding:12,fontSize:13,color:"#9e9e9e",textAlign:"center",fontStyle:"italic"}}>{filter==="all"?"All maxed!":"No "+filter+" items"}</div>
           :fl.map((g,i)=><div key={i} style={{padding:"10px 12px",marginBottom:6,borderRadius:8,
             background:g.type==="note"?"repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(0,0,0,.015) 8px,rgba(0,0,0,.015) 16px)":g.type==="crop"?"#f1f8e9":"#fce4ec20",
             border:g.type==="note"?"1px dashed #bdbdbd":`1px solid ${g.type==="crop"?"#c5e1a5":"#f8bbd0"}`}}>
@@ -524,12 +457,9 @@ function App(){
               <ItemPill name={g.item}/>
               {g.who.length>0&&g.who[0]!=="—"&&<span style={{fontSize:12,color:"#6d4c41"}}>→ {g.who.map((n,j)=><NT key={j} name={n}/>)}</span>}
             </div>
-            <div style={{fontSize:11,color:"#795548",marginTop:4,lineHeight:1.4,fontStyle:g.type==="note"?"italic":"normal"}}>{g.note}</div>
+            <div style={{fontSize:11,color:"#795548",marginTop:4,fontStyle:g.type==="note"?"italic":"normal"}}>{g.note}</div>
           </div>)}
-        </Section>;
-      })}
-
-      {/* MVP */}
+        </Section>;})}
       <div style={{margin:"24px 0 16px",padding:"16px 18px",borderRadius:12,background:"linear-gradient(135deg,#fff9c4,#fff176)",border:"2px solid #f9a825"}}>
         <div style={{fontFamily:"'Bitter',Georgia,serif",fontSize:15,fontWeight:900,marginBottom:8,color:"#e65100"}}>⭐ MVP Items</div>
         <div style={{fontSize:12,lineHeight:2,color:"#5d4037"}}>
@@ -538,14 +468,12 @@ function App(){
           )}
         </div>
       </div>
-
-      {/* Hard chars */}
       {fne.length>0&&<Section emoji="🔧" title="Cooking / Mining / Artisan" badge={String(fne.length)}
         bg="linear-gradient(135deg,#efebe9,#d7ccc8)" borderColor="#bdbdbd" accentColor="#5d4037" badgeBg="#795548"
         isOpen={showOthers} toggle={()=>setShowOthers(!showOthers)}>
         {fne.map((v,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",marginBottom:4,borderRadius:8,background:"#fafafa",border:"1px solid #eee"}}>
-          <Ico name={v.giftIcon} size={28}/>
-          <div style={{flex:1,minWidth:0}}>
+          <Ico name={v.giftName} size={28}/>
+          <div style={{flex:1}}>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
               <span style={{fontFamily:"'Bitter',Georgia,serif",fontSize:13,fontWeight:700,color:"#5d4037"}}>{v.name}</span>
               <span style={{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,padding:"1px 5px",borderRadius:3,
@@ -558,7 +486,7 @@ function App(){
     </div>}
 
     <div style={{textAlign:"center",fontSize:10,color:"#bcaaa4",marginTop:24,paddingBottom:20}}>
-      Based on Stardew Valley v1.6 · Item icons from <a href="https://stardewvalleywiki.com" style={{color:"#8d6e63"}}>Stardew Valley Wiki</a> (CC BY-NC-SA)
+      Based on Stardew Valley v1.6 · Icons from <a href="https://stardewvalleywiki.com" style={{color:"#8d6e63"}}>Stardew Valley Wiki</a> (CC BY-NC-SA)
     </div>
   </div>;
 }
